@@ -1,0 +1,84 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Lindhav disable request",
+    "version": "1.0",
+    "description": "Files a request to disable a Lindhav Bank staff account. The AI Risk Officer approves or denies it by email. The agent never disables anything itself."
+  },
+  "servers": [
+    {
+      "url": "https://prod-01.swedencentral.logic.azure.com:443/workflows/7eebe52b50064ca3b98ef9a713051773/triggers/manual/paths"
+    }
+  ],
+  "paths": {
+    "/invoke": {
+      "post": {
+        "operationId": "request_disable",
+        "description": "Ask the AI Risk Officer to disable a staff account. Use only when a staff member asks for an account to be disabled. Returns at once with status pending_approval. Nothing changes unless a person approves.",
+        "parameters": [
+          {
+            "name": "api-version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2016-10-01"
+              ],
+              "default": "2016-10-01"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_upn",
+                  "reason",
+                  "requested_by"
+                ],
+                "properties": {
+                  "user_upn": {
+                    "type": "string",
+                    "description": "Sign-in name of the account to disable, like anna.holm@lindhav.fernandohuizar.com"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Why it should be disabled, in the requester's words"
+                  },
+                  "requested_by": {
+                    "type": "string",
+                    "description": "Sign-in name of the staff member chatting with the agent"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The request went to the approver and is waiting"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "entra": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Entra token for the Foundry project identity. Foundry adds it, nothing is stored here."
+      }
+    }
+  },
+  "security": [
+    {
+      "entra": []
+    }
+  ]
+}

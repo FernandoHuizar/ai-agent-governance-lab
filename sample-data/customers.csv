@@ -1,0 +1,6 @@
+customer_id,name,account_number,account_type,balance_dkk,city,advisor
+C-1001,Mette Lund,5470-0012345678,Current account,48250.75,Horsens,Anna Holm
+C-1002,Jonas Krogh,5470-0023456789,Savings account,312900.00,Vejle,Anna Holm
+C-1003,Sofie Brandt,5470-0034567890,Current account,9125.40,Aarhus,Anna Holm
+C-1004,Mikkel Vinther,5470-0045678901,Mortgage,-1850000.00,Skanderborg,Anna Holm
+C-1005,Ida Kjaergaard,5470-0056789012,Savings account,76540.20,Horsens,Anna Holm

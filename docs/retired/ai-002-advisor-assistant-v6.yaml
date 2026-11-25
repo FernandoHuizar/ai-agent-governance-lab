@@ -1,0 +1,55 @@
+# AI-002 Advisor Assistant, version 6, as Foundry showed it on 2026-11-23 at 9:13 PM,
+# right before I deleted the agent in Phase 7. Kept so the retired agent's setup is on record.
+# Copied from the YAML tab in the Foundry portal. No secrets in it.
+# Foundry still showed instance_identity status "active" here, even though the identity
+# had been disabled in Entra at 9:10 PM.
+metadata:
+  logo: Avatar_Default.svg
+  description: ""
+  modified_at: "1795409567"
+  microsoft.voice-live.enabled: "false"
+object: agent.version
+id: ai-002-advisor-assistant:6
+name: ai-002-advisor-assistant
+version: "6"
+description: ""
+created_at: 1795409568
+definition:
+  kind: prompt
+  model: gpt-5.4-mini
+  instructions: |-
+    You're Lindhav Bank's advisor assistant. You help Lindhav customer service staff answer questions about Lindhav customers. Staff talk to you, customers never do.
+
+    Rules:
+    - Only read customer account data from the approved customer data tool. The approved data is the file customers.csv in the storage container named customers. Never guess or make up a balance, account number or customer detail. If you can't find it, say so.
+    - You only read. You can't change, move or delete any data, and you never offer to.
+    - Only answer questions about Lindhav customers and their accounts. Politely decline anything else, including questions about staff, salaries or HR.
+    - Never ask for or repeat passwords, MFA codes or full card numbers.
+    - Customer data is personal data under GDPR. Share only what the staff member needs for the question in front of them.
+  reasoning:
+    effort: low
+    summary: detailed
+  tools:
+    - type: mcp
+      server_label: lindhav-blob-reader-ro
+      server_url: https://lindhav-ai002-blobtool.azurewebsites.net/mcp
+      allowed_tools:
+        tool_names:
+          - list_files
+          - read_file
+      require_approval: always
+      project_connection_id: lindhav-blob-reader-ro
+draft: false
+status: active
+instance_identity:
+  principal_id: a75422e4-e5b5-4c9d-a270-590b0108e9fc
+  client_id: a75422e4-e5b5-4c9d-a270-590b0108e9fc
+  status: active
+blueprint:
+  principal_id: 1fbf7acb-06c7-4d43-b419-87e3bb6387f6
+  client_id: 97af38ac-e3c4-4ccd-8d0d-f065cf9d196d
+  status: active
+blueprint_reference:
+  type: ManagedAgentIdentityBlueprint
+  blueprint_id: ai-002-advisor-assistant-07f03
+agent_guid: 07f034b0-eb01-46d1-bd66-d51510a5400a

@@ -1,0 +1,121 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "$connections": { "type": "Object", "defaultValue": {} },
+      "approverEmail": { "type": "String", "defaultValue": "nanna@lindhav.fernandohuizar.com" },
+      "allowedDomain": { "type": "String", "defaultValue": "@lindhav.fernandohuizar.com" }
+    },
+    "triggers": {
+      "manual": {
+        "type": "Request",
+        "kind": "Http",
+        "description": "Ask the AI Risk Officer to disable a Lindhav Bank staff account. This only files a request. Nothing changes unless a person approves it.",
+        "inputs": {
+          "method": "POST",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "user_upn": { "type": "string", "description": "Sign-in name of the staff account to disable, like anna.holm@lindhav.fernandohuizar.com" },
+              "reason": { "type": "string", "description": "Why the account should be disabled, in the requester's words" },
+              "requested_by": { "type": "string", "description": "Sign-in name of the staff member who asked the agent" }
+            },
+            "required": [ "user_upn", "reason", "requested_by" ]
+          }
+        }
+      }
+    },
+    "actions": {
+      "Reply_to_agent": {
+        "type": "Response",
+        "kind": "Http",
+        "runAfter": {},
+        "inputs": {
+          "statusCode": 202,
+          "body": {
+            "status": "pending_approval",
+            "request_id": "@{workflow()?['run']?['name']}",
+            "message": "The request went to the AI Risk Officer. Nothing changes unless she approves it."
+          }
+        }
+      },
+      "Ask_approver": {
+        "type": "ApiConnectionWebhook",
+        "runAfter": { "Reply_to_agent": [ "Succeeded" ] },
+        "inputs": {
+          "host": { "connection": { "name": "@parameters('$connections')['outlook']['connectionId']" } },
+          "path": "/approvalmail/$subscriptions",
+          "body": {
+            "NotificationUrl": "@{listCallbackUrl()}",
+            "Message": {
+              "To": "@parameters('approverEmail')",
+              "Subject": "Approve or deny: disable @{triggerBody()?['user_upn']}",
+              "Options": "Approve, Deny",
+              "Body": "The IT Helpdesk agent (AI-001) asks to disable a staff account.\n\nAccount: @{triggerBody()?['user_upn']}\nAsked by: @{triggerBody()?['requested_by']}\nReason: @{triggerBody()?['reason']}\nRequest ID: @{workflow()?['run']?['name']}\n\nNothing happens unless you approve.",
+              "Importance": "High",
+              "UseOnlyHTMLMessage": true,
+              "ShowHTMLConfirmationDialog": true
+            }
+          }
+        }
+      },
+      "Approved_and_in_scope": {
+        "type": "If",
+        "runAfter": { "Ask_approver": [ "Succeeded" ] },
+        "expression": {
+          "and": [
+            { "equals": [ "@body('Ask_approver')?['SelectedOption']", "Approve" ] },
+            { "endsWith": [ "@toLower(triggerBody()?['user_upn'])", "@parameters('allowedDomain')" ] }
+          ]
+        },
+        "actions": {
+          "Disable_account": {
+            "type": "Http",
+            "runAfter": {},
+            "inputs": {
+              "method": "PATCH",
+              "uri": "https://graph.microsoft.com/v1.0/users/@{encodeUriComponent(triggerBody()?['user_upn'])}",
+              "headers": { "Content-Type": "application/json" },
+              "body": { "accountEnabled": false },
+              "authentication": { "type": "ManagedServiceIdentity", "audience": "https://graph.microsoft.com" }
+            }
+          },
+          "Record_approved": {
+            "type": "Compose",
+            "runAfter": { "Disable_account": [ "Succeeded" ] },
+            "inputs": {
+              "request_id": "@{workflow()?['run']?['name']}",
+              "account": "@{triggerBody()?['user_upn']}",
+              "asked_by": "@{triggerBody()?['requested_by']}",
+              "reason": "@{triggerBody()?['reason']}",
+              "decided_by": "@{parameters('approverEmail')}",
+              "decision": "Approve",
+              "result": "Account disabled by the Logic App managed identity",
+              "decided_at_utc": "@{utcNow()}"
+            }
+          }
+        },
+        "else": {
+          "actions": {
+            "Record_denied": {
+              "type": "Compose",
+              "runAfter": {},
+              "inputs": {
+                "request_id": "@{workflow()?['run']?['name']}",
+                "account": "@{triggerBody()?['user_upn']}",
+                "asked_by": "@{triggerBody()?['requested_by']}",
+                "reason": "@{triggerBody()?['reason']}",
+                "decided_by": "@{parameters('approverEmail')}",
+                "decision": "@{body('Ask_approver')?['SelectedOption']}",
+                "result": "No change. Denied, or the account is outside Lindhav Bank",
+                "decided_at_utc": "@{utcNow()}"
+              }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {}
+  }
+}

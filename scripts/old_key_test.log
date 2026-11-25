@@ -1,0 +1,21 @@
+2026-11-23 17:28:58  Start. Turning key access back on for the test
+2026-11-23 17:30:07  disableLocalAuth set to false
+2026-11-23 17:30:11  Key call with keys on -> HTTP 403
+2026-11-23 17:31:12  Key call with keys on -> HTTP 200
+2026-11-23 17:31:12  Turning key access off again
+2026-11-23 17:31:51  disableLocalAuth set to true
+2026-11-23 17:33:53  Old key call with keys off -> HTTP 200 
+2026-11-23 17:35:53  Old key call with keys off -> HTTP 403 
+{
+  "error": {
+    "code": "AuthenticationTypeDisabled",
+    "message": "Key based authentication is disabled for this resource."
+  }
+}
+2026-11-23 17:37:54  Old key call with keys off -> HTTP 403 
+{
+  "error": {
+    "code": "AuthenticationTypeDisabled",
+    "message": "Key based authentication is disabled for this resource."
+  }
+}
