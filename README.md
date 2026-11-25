@@ -23,7 +23,7 @@ AI agents are like new employees. They need an ID, a boss, only the keys they ne
 
 **The agent asked to lock an account. When the risk officer said no, nothing happened. When she said yes, it ran.**
 
-<img src="screenshots/06-approval-denied-run.png" width="380" alt="Denied run, disable step skipped"> <img src="screenshots/07-approval-approved-run.png" width="380" alt="Approved run, disable step ran">
+<img src="screenshots/06-approval-no-vs-yes.png" width="750" alt="Left, the risk officer said no and the lock step was skipped. Right, she said yes and the account was locked">
 
 **Every request keeps a record of who asked, who decided and when.**
 
@@ -45,12 +45,6 @@ AI agents are like new employees. They need an ID, a boss, only the keys they ne
 | Off switch | Agent stopped in about 30 seconds |
 | Owner leaves | Flagged by the agent list 2 minutes later |
 | Agent deleted | Nothing left behind |
-
-## What I learned
-
-- Telling an agent "don't do that" isn't enough. Taking away the access is what stops it.
-- Don't trust what an agent says. My agent said it sent a request when it didn't. The logs are the truth.
-- When an agent's owner leaves, nothing fixes itself on the free plan. The agent list is what caught it.
 
 More detail is in [docs/problem-log.md](docs/problem-log.md), and the other screenshots are in [screenshots](screenshots).
 
